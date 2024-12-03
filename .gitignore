@@ -36,3 +36,7 @@ build/
 
 ### Mac OS ###
 .DS_Store
+
+# Keystore pour Java
+keystore.jks
+config.properties
