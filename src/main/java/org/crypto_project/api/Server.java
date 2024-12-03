@@ -37,7 +37,7 @@ public class Server
             }
             char[] password = properties.getProperty("keystore.password").toCharArray();
 
-            
+
             KeyStore ks = KeyStore.getInstance("JKS");
             try (FileInputStream fis = new FileInputStream("keystore.jks")) {
                 ks.load(fis, password);
