@@ -16,8 +16,7 @@ import java.security.cert.CertificateException;
 import java.sql.SQLException;
 import java.util.Properties;
 
-import static org.crypto_project.api.ServerMethods.readRequestBody;
-import static org.crypto_project.api.ServerMethods.sendResponse;
+import static org.crypto_project.api.ServerMethods.*;
 
 public class Server
 {
@@ -82,48 +81,21 @@ public class Server
         {
             String requestMethod = exchange.getRequestMethod();
             exchange.getResponseHeaders().add("Access-Control-Allow-Origin","*");
-            exchange.getResponseHeaders().add("Access-Control-Allow-Methods","GET, POST");
+            exchange.getResponseHeaders().add("Access-Control-Allow-Methods","POST");
             exchange.getResponseHeaders().add("Access-Control-Allow-Headers","Content-Type");
-            if (requestMethod.equalsIgnoreCase("GET"))
-            {
-                System.out.println("--- Requête GET  ---");
-                String response = null;
-               /* try {
-                    //response = ;
-                } catch (SQLException | ClassNotFoundException e)
-                {
-                    throw new RuntimeException(e);
-                }*/
-                sendResponse(exchange, 200, response);
-            }
-            else if (requestMethod.equalsIgnoreCase("POST"))
-            {
-
-                System.out.println("--- Requête POST reçue ---");
-
-
+            if (requestMethod.equalsIgnoreCase("POST")) {
+                System.out.println("--- Requête POST reçue (authentification) ---");
                 String requestBody = readRequestBody(exchange);
-                System.out.println("requestBody = " + requestBody);
-              /*  try {
-                    boolean maj = Update(requestBody);
-                    if(maj)
-                    {
-                        System.out.println("");
-                        sendResponse(exchange, 200, "");
-                    }
-                    else
-                    {
-                        System.out.println("");
-                        sendResponse(exchange, 400, "");
-                    }
-                }
-                catch (SQLException | ClassNotFoundException e)
-                {
-                    throw new RuntimeException(e);
-                }*/
+                System.out.println("Données reçues : " + requestBody);
 
-            }
-            else sendResponse(exchange, 405, "Methode non autorisee !");
+                // Parse login/password
+                String[] credentials = parseCredentials(requestBody);
+                if (credentials != null && verifyUser(credentials[0], credentials[1])) {
+                    sendResponse(exchange, 200, "Authentification réussie. Accédez à /api/paiement.");
+                } else {
+                    sendResponse(exchange, 401, "Échec de l'authentification.");
+                }
+            }else sendResponse(exchange, 405, "Methode non autorisee !");
         }
 
     }
@@ -134,6 +106,8 @@ public class Server
         public void handle(HttpExchange exchange) throws IOException {
             String requestMethod = exchange.getRequestMethod();
             exchange.getResponseHeaders().add("Access-Control-Allow-Origin", "*");
+            exchange.getResponseHeaders().add("Access-Control-Allow-Methods","GET");
+            exchange.getResponseHeaders().add("Access-Control-Allow-Headers","Content-Type");
 
             if (requestMethod.equalsIgnoreCase("GET")) {
                 System.out.println("--- Requête GET reçue (paiement) ---");

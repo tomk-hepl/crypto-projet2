@@ -34,7 +34,7 @@ public class ServerMethods
     }
 
 
-    private static String[] parseCredentials(String requestBody) {
+    static String[] parseCredentials(String requestBody) {
         // Format attendu : login=username&password=hashedpassword
         String[] parts = requestBody.split("&");
         if (parts.length == 2) {
@@ -46,7 +46,7 @@ public class ServerMethods
     }
 
 
-    private static boolean verifyUser(String login, String password) {
+    static boolean verifyUser(String login, String password) {
         // Exemple fictif de vérification
         String storedHashedPassword = "hashed_password"; // Récupéré depuis la BD
         return login.equals("user") && password.equals(storedHashedPassword);
