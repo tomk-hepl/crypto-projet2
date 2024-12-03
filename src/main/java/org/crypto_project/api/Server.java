@@ -54,7 +54,7 @@ public class Server
 
 
             server.createContext("/api/auth",new AuthHandler());
-            server.createContext("/api/payement",new PaymentHandler());
+            //server.createContext("/api/payement",new PaymentHandler());
             System.out.println("Demarrage du serveur HTTPS...");
             server.start();
         }
@@ -86,7 +86,10 @@ public class Server
                 // Parse login/password
                 String[] credentials = parseCredentials(requestBody);
                 if (credentials != null && verifyUser(credentials[0], credentials[1])) {
-                    sendResponse(exchange, 200, "Authentification réussie. Accédez à /api/paiement.");
+                    String response = "<html><body><h1>Page de paiement</h1>" +
+                            "<button>Payer</button></body></html>";
+                    sendResponse(exchange, 200, "Authentification réussie. Accédez à /api/paiement." + response);
+
                 } else {
                     sendResponse(exchange, 401, "Échec de l'authentification.");
                 }
@@ -96,7 +99,7 @@ public class Server
     }
 
 
-    static class PaymentHandler implements HttpHandler {
+   /* static class PaymentHandler implements HttpHandler {
         @Override
         public void handle(HttpExchange exchange) throws IOException {
             String requestMethod = exchange.getRequestMethod();
@@ -113,6 +116,6 @@ public class Server
                 sendResponse(exchange, 405, "Méthode non autorisée.");
             }
         }
-    }
+    }*/
 
 }

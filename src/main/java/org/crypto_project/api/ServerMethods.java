@@ -47,9 +47,10 @@ public class ServerMethods
 
 
     static boolean verifyUser(String login, String password) {
-        // Exemple fictif de vérification
-        String storedHashedPassword = "hashed_password"; // Récupéré depuis la BD
-        return login.equals("user") && password.equals(storedHashedPassword);
+
+        String storeLogin = "login";
+        String storedHashedPassword = "hashed_password";
+        return login.equals(storeLogin) && password.equals(storedHashedPassword);
     }
 
 }
