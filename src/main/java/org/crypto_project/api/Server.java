@@ -61,15 +61,8 @@ public class Server
         catch (IOException e)
         {
             System.out.println("Erreur: " + e.getMessage());
-        } catch (UnrecoverableKeyException e) {
-            throw new RuntimeException(e);
-        } catch (CertificateException e) {
-            throw new RuntimeException(e);
-        } catch (NoSuchAlgorithmException e) {
-            throw new RuntimeException(e);
-        } catch (KeyStoreException e) {
-            throw new RuntimeException(e);
-        } catch (KeyManagementException e) {
+        } catch (UnrecoverableKeyException | CertificateException | NoSuchAlgorithmException | KeyStoreException | KeyManagementException e)
+        {
             throw new RuntimeException(e);
         }
     }
@@ -79,11 +72,13 @@ public class Server
         @Override
         public void handle(HttpExchange exchange) throws IOException
         {
+
             String requestMethod = exchange.getRequestMethod();
             exchange.getResponseHeaders().add("Access-Control-Allow-Origin","*");
             exchange.getResponseHeaders().add("Access-Control-Allow-Methods","POST");
             exchange.getResponseHeaders().add("Access-Control-Allow-Headers","Content-Type");
-            if (requestMethod.equalsIgnoreCase("POST")) {
+            if (requestMethod.equalsIgnoreCase("POST"))
+            {
                 System.out.println("--- Requête POST reçue (authentification) ---");
                 String requestBody = readRequestBody(exchange);
                 System.out.println("Données reçues : " + requestBody);
