@@ -17,6 +17,7 @@ public class dbUserMethods
         String createTableSQL = """
             CREATE TABLE IF NOT EXISTS users (
                 login TEXT NOT NULL UNIQUE,
+                password TEXT NOT NULL,
                 salt TEXT NOT NULL,
                 password_hash TEXT NOT NULL
             );
@@ -32,11 +33,12 @@ public class dbUserMethods
         String salt = generateSalt();
         String hashedPassword = hashPassword(password, salt);
 
-        String insertUserSQL = "INSERT INTO users (login, salt, password_hash) VALUES (?, ?, ?)";
+        String insertUserSQL = "INSERT INTO users (login, password, salt, password_hash) VALUES (?, ?, ?, ?)";
         try (PreparedStatement pstmt = connection.prepareStatement(insertUserSQL)) {
             pstmt.setString(1, login);
-            pstmt.setString(2, salt);
-            pstmt.setString(3, hashedPassword);
+            pstmt.setString(2,password);
+            pstmt.setString(3, salt);
+            pstmt.setString(4, hashedPassword);
             pstmt.executeUpdate();
         }
     }
@@ -44,7 +46,7 @@ public class dbUserMethods
 
     static String generateSalt() throws Exception {
         SecureRandom random = new SecureRandom();
-        byte[] saltBytes = new byte[16]; // 16 octets pour le sel
+        byte[] saltBytes = new byte[16]; // 16 bytes for the salt
         random.nextBytes(saltBytes);
         return Base64.getEncoder().encodeToString(saltBytes);
     }
