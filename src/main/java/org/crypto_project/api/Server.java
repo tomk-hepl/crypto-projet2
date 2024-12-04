@@ -13,6 +13,8 @@ import java.io.IOException;
 import java.net.InetSocketAddress;
 import java.security.*;
 import java.security.cert.CertificateException;
+import java.sql.Connection;
+import java.sql.DriverManager;
 import java.sql.SQLException;
 import java.util.Properties;
 
@@ -22,12 +24,17 @@ public class Server
 {
 
     private final static  int port =  8043;
+    private static final String DB_URL = "jdbc:sqlite:database.users";
     public static void main(String[] args)
     {
 
-        HttpsServer server;
+        HttpsServer server = null;
+        Connection connection = null;
         try
         {
+            connection = DriverManager.getConnection(DB_URL);
+            System.out.println("Successful connection to the SQLite database.");
+
             server = HttpsServer.create(new InetSocketAddress(port),0);
 
             SSLContext sslContext = SSLContext.getInstance("TLS");
@@ -53,7 +60,7 @@ public class Server
             server.setHttpsConfigurator(new HttpsConfigurator(sslContext));
 
 
-            server.createContext("/api/auth",new AuthHandler());
+            server.createContext("/api/auth",new AuthHandler(connection));
             //server.createContext("/api/payement",new PaymentHandler());
             System.out.println("Demarrage du serveur HTTPS...");
             server.start();
@@ -61,14 +68,42 @@ public class Server
         catch (IOException e)
         {
             System.out.println("Erreur: " + e.getMessage());
-        } catch (UnrecoverableKeyException | CertificateException | NoSuchAlgorithmException | KeyStoreException | KeyManagementException e)
+        } catch (UnrecoverableKeyException | CertificateException | NoSuchAlgorithmException | KeyStoreException |
+                 KeyManagementException | SQLException e)
         {
             throw new RuntimeException(e);
+        }
+        finally
+        {
+
+            Connection finalConnection = connection;
+            HttpsServer finalServer = server;
+            Runtime.getRuntime().addShutdownHook(new Thread(() -> {
+                if (finalConnection != null) {
+                    try {
+                        finalConnection.close();
+                        System.out.println("Connexion à la base de données fermée.");
+                    } catch (SQLException e) {
+                        System.err.println("Erreur lors de la fermeture de la base de données : " + e.getMessage());
+                    }
+                }
+                if (finalServer != null) {
+                    finalServer.stop(0);
+                    System.out.println("Serveur HTTPS arrêté.");
+                }
+            }));
         }
     }
 
     static class AuthHandler implements HttpHandler
     {
+        private final Connection connection;
+
+        AuthHandler(Connection connection) {
+            this.connection = connection;
+        }
+
+
         @Override
         public void handle(HttpExchange exchange) throws IOException
         {
@@ -83,15 +118,21 @@ public class Server
                 String requestBody = readRequestBody(exchange);
                 System.out.println("Données reçues : " + requestBody);
 
-                // Parse login/password
-                String[] credentials = parseCredentials(requestBody);
-                if (credentials != null && verifyUser(credentials[0], credentials[1])) {
-                    String response = "<html><body><h1>Page de paiement</h1>" +
-                            "<button>Payer</button></body></html>";
-                    sendResponse(exchange, 200, "Authentification réussie. Accédez à /api/paiement." + response);
+                String[] credentials = ServerMethods.parseCredentials(requestBody);
+                if (credentials == null) {
+                    sendResponse(exchange, 400, "Format des identifiants incorrect.");
+                    return;
+                }
 
+                String login = credentials[0];
+                String password = credentials[1];
+
+                boolean isValid = ServerMethods.verifyUser(connection, login, password);
+
+                if (isValid) {
+                    sendResponse(exchange, 200, "Authentification réussie !");
                 } else {
-                    sendResponse(exchange, 401, "Échec de l'authentification.");
+                    sendResponse(exchange, 401, "Identifiants invalides.");
                 }
             }else sendResponse(exchange, 405, "Methode non autorisee !");
         }

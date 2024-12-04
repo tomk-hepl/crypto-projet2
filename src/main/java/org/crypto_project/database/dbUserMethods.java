@@ -52,7 +52,7 @@ public class dbUserMethods
     }
 
 
-    static String hashPassword(String password, String salt) throws Exception {
+    public static String hashPassword(String password, String salt) throws Exception {
         MessageDigest digest = MessageDigest.getInstance("SHA-256");
         digest.update(salt.getBytes());
         byte[] hashBytes = digest.digest(password.getBytes());

@@ -6,6 +6,11 @@ import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.OutputStream;
+import java.sql.Connection;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
+
+import static org.crypto_project.database.dbUserMethods.hashPassword;
 
 public class ServerMethods
 {
@@ -35,7 +40,7 @@ public class ServerMethods
 
 
     static String[] parseCredentials(String requestBody) {
-        // Format attendu : login=username&password=hashedpassword
+        // Format attendu : login=username&password=password
         String[] parts = requestBody.split("&");
         if (parts.length == 2) {
             String login = parts[0].split("=")[1];
@@ -46,11 +51,28 @@ public class ServerMethods
     }
 
 
-    static boolean verifyUser(String login, String password) {
+    static boolean verifyUser(Connection connection, String login, String password) {
+        String query = "SELECT salt, password_hash FROM users WHERE login = ?";
+        try (PreparedStatement pstmt = connection.prepareStatement(query)) {
+            pstmt.setString(1, login);
+            try (ResultSet rs = pstmt.executeQuery()) {
+                if (rs.next()) {
+                    // Récupère le sel et le hash stockés
+                    String salt = rs.getString("salt");
+                    String storedHashedPassword = rs.getString("password_hash");
 
-        String storeLogin = "login";
-        String storedHashedPassword = "password123";
-        return login.equals(storeLogin) && password.equals(storedHashedPassword);
+                    // Recrée le hash avec le sel et le mot de passe fourni
+                    String calculatedHash = hashPassword(password, salt);
+
+                    // Compare le hash calculé avec celui stocké
+                    return calculatedHash.equals(storedHashedPassword);
+                }
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        return false;
     }
+
 
 }
