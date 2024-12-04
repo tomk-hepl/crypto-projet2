@@ -49,7 +49,7 @@ public class ServerMethods
     static boolean verifyUser(String login, String password) {
 
         String storeLogin = "login";
-        String storedHashedPassword = "hashed_password";
+        String storedHashedPassword = "password123";
         return login.equals(storeLogin) && password.equals(storedHashedPassword);
     }
 
