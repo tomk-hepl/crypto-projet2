@@ -19,7 +19,7 @@ public class ServerMethods
     static void sendResponse(HttpExchange exchange, int statusCode, String response) throws IOException
     {
         System.out.println("Envoi de la réponse (" + statusCode + ") : --" + response + "--");
-        exchange.sendResponseHeaders(statusCode, response.length());
+        exchange.sendResponseHeaders(statusCode, response.getBytes().length);
         OutputStream os = exchange.getResponseBody();
         os.write(response.getBytes());
         os.close();

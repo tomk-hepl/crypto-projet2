@@ -62,12 +62,12 @@ public class Server
 
             server.createContext("/api/auth",new AuthHandler(connection));
             //server.createContext("/api/payement",new PaymentHandler());
-            System.out.println("Demarrage du serveur HTTPS...");
+            System.out.println("Starting the HTTPS server...");
             server.start();
         }
         catch (IOException e)
         {
-            System.out.println("Erreur: " + e.getMessage());
+            System.out.println("Error: " + e.getMessage());
         } catch (UnrecoverableKeyException | CertificateException | NoSuchAlgorithmException | KeyStoreException |
                  KeyManagementException | SQLException e)
         {
@@ -82,14 +82,14 @@ public class Server
                 if (finalConnection != null) {
                     try {
                         finalConnection.close();
-                        System.out.println("Connexion à la base de données fermée.");
+                        System.out.println("Connection to the database closed.");
                     } catch (SQLException e) {
-                        System.err.println("Erreur lors de la fermeture de la base de données : " + e.getMessage());
+                        System.err.println("Error closing the database : " + e.getMessage());
                     }
                 }
                 if (finalServer != null) {
                     finalServer.stop(0);
-                    System.out.println("Serveur HTTPS arrêté.");
+                    System.out.println("Server HTTPS stopped.");
                 }
             }));
         }
