@@ -139,24 +139,4 @@ public class Server
 
     }
 
-
-   /* static class PaymentHandler implements HttpHandler {
-        @Override
-        public void handle(HttpExchange exchange) throws IOException {
-            String requestMethod = exchange.getRequestMethod();
-            exchange.getResponseHeaders().add("Access-Control-Allow-Origin", "*");
-            exchange.getResponseHeaders().add("Access-Control-Allow-Methods","GET");
-            exchange.getResponseHeaders().add("Access-Control-Allow-Headers","Content-Type");
-
-            if (requestMethod.equalsIgnoreCase("GET")) {
-                System.out.println("--- Requête GET reçue (paiement) ---");
-                String response = "<html><body><h1>Page de paiement</h1>" +
-                        "<button>Payer</button></body></html>";
-                sendResponse(exchange, 200, response);
-            } else {
-                sendResponse(exchange, 405, "Méthode non autorisée.");
-            }
-        }
-    }*/
-
 }
