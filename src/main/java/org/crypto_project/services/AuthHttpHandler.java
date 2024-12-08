@@ -58,13 +58,13 @@ public class AuthHttpHandler implements HttpHandler
 
             // sendResponse(exchange, 200, "Authentication successful!");
             try {
+                sendResponse(exchange,200 , getLoadingPage());
                 ParentClient client = new ParentClient(ACQ_PORT);
                 client.init(ACQ_PORT);
                 client.send(token);
-                sendResponse(exchange,200 , getLoadingPage());
                 String ack = client.read();
 
-
+                //à modif en focntion du statuscode de retour de l'ACQ
                 if ("fail".equals(ack)) {
                     sendResponse(exchange, 200, getFailPage());
                 } else if ("success".equals(ack)) {
