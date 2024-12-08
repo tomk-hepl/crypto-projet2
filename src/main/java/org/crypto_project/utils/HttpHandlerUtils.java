@@ -297,6 +297,76 @@ public class HttpHandlerUtils
         """;
     }
 
+    public static String getPaymentPage() {
+        return """
+    <!DOCTYPE html>
+    <html lang="fr">
+    <head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <title>Paiement</title>
+        <style>
+            body {
+                font-family: Arial, sans-serif;
+                background-color: #f4f4f9;
+                margin: 0;
+                padding: 0;
+                display: flex;
+                justify-content: center;
+                align-items: center;
+                height: 100vh;
+            }
+            .payment-container {
+                background: white;
+                padding: 20px;
+                border-radius: 8px;
+                box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+                width: 300px;
+                text-align: center;
+            }
+            h1 {
+                font-size: 1.5rem;
+                margin-bottom: 20px;
+            }
+            input[type="text"] {
+                width: calc(100% - 22px);
+                padding: 10px;
+                margin: 10px 0;
+                border: 1px solid #ccc;
+                border-radius: 4px;
+            }
+            button {
+                background-color: #007bff;
+                color: white;
+                padding: 10px;
+                border: none;
+                border-radius: 4px;
+                cursor: pointer;
+                width: 100%;
+            }
+            button:hover {
+                background-color: #0056b3;
+            }
+            .note {
+                margin-top: 20px;
+                font-size: 0.9rem;
+                color: #555;
+            }
+        </style>
+    </head>
+    <body>
+        <div class="payment-container">
+            <h1>Entrez votre Token</h1>
+            <form action="/api/payment" method="POST">
+                <input type="text" name="token" placeholder="Token de paiement" required>
+                <button type="submit">Paiement</button>
+            </form>
+            <p class="note">Veuillez saisir un token valide pour procéder au paiement.</p>
+        </div>
+    </body>
+    </html>
+    """;
+    }
 
 
 }

@@ -49,22 +49,23 @@ public class AuthHttpHandler implements HttpHandler
         String login = credentials[0];
         String password = credentials[1];
         String token = credentials[2];
-        if (token == null) {
+        /*if (token == null) {
             sendResponse(exchange, 400, "Invalid token.");
-        }
+        }*/
         boolean isValid = database.verifyUser(login, password);
 
         if (isValid) {
 
-            // sendResponse(exchange, 200, "Authentication successful!");
-            try {
+            sendResponse(exchange, 200, "Authentication successful!");
+            sendResponse(exchange, 200, getPaymentPage());
+            /*try {
                 sendResponse(exchange,200 , getLoadingPage());
                 ParentClient client = new ParentClient(ACQ_PORT);
                 client.init(ACQ_PORT);
                 client.send(token);
                 String ack = client.read();
 
-                //à modif en focntion du statuscode de retour de l'ACQ
+                //à modif en fonction du statuscode de retour de l'ACQ
                 if ("fail".equals(ack)) {
                     sendResponse(exchange, 200, getFailPage());
                 } else if ("success".equals(ack)) {
@@ -74,7 +75,7 @@ public class AuthHttpHandler implements HttpHandler
             } catch (IOException e) {
                 System.err.println("Erreur lors de la communication avec le serveur ACQ : " + e.getMessage());
                 sendResponse(exchange, 500, "Erreur interne lors de la communication avec ACQ.");
-            }
+            }*/
 
         } else {
             sendResponse(exchange, 401, "Invalid credentials.");
