@@ -67,17 +67,20 @@ public class HttpsServer
         }));
     }
 
-    public static void main(String[] args)
-    {
+    public static void main(String[] args) {
         HttpsServer server = new HttpsServer(DB_URL);
+        //ParentClient client = new ParentClient(ACQ_PORT);
         try {
             server.init();
+            //client.init(ACQ_PORT);
+
         } catch (IOException e) {
             System.out.println("Error: " + e.getMessage());
         } catch (Exception e) {
             throw new RuntimeException(e);
         } finally {
             server.close();
+
         }
     }
 }

@@ -74,7 +74,7 @@ public class HttpHandlerUtils
         return null;
     }
 
-    public static String getAuthPage(String token) {
+    public static String getAuthPage() {
         return """
         <!DOCTYPE html>
         <html lang="fr">
@@ -136,8 +136,8 @@ public class HttpHandlerUtils
                 <h1>Connexion pour Achat</h1>
                 <form action="/api/auth" method="POST">
                     <input type="text" name="login" placeholder="Nom d'utilisateur" required>
-                    <input type="password" name="password" placeholder="Mot de passe" required> """
-                    + "<input type=\"hidden\" name=\"token\" value=\"" + token + "\">" + """
+                    <input type="password" name="password" placeholder="Mot de passe" required> 
+                     <input type="text" name="token" placeholder="code d'authentification" required>
                 <button type="submit">Se connecter</button>
                 </form>
                 <p class="note">Vos informations resteront confidentielles.</p>
@@ -296,5 +296,7 @@ public class HttpHandlerUtils
         </html>
         """;
     }
+
+
 
 }
