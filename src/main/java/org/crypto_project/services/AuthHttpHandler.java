@@ -58,9 +58,9 @@ public class AuthHttpHandler implements HttpHandler
 
             //sendResponse(exchange, 200, "Authentication successful!");
             try {
-                /*exchange.getResponseHeaders().add("Location", "https://127.0.0.1:8043/api/success");
-                exchange.sendResponseHeaders(302, -1); // 302 : Redirection Found*/
-                //sendResponse(exchange,200 , getLoadingPage());
+
+                exchange.getResponseHeaders().add("Location", "https://127.0.0.1:8043/api/loading");
+                exchange.sendResponseHeaders(302, -1); // 302 : Redirection Found
                 ParentClient client = new ParentClient(ACQ_PORT);
                 client.init(ACQ_PORT);
                 client.send(token);
@@ -68,14 +68,17 @@ public class AuthHttpHandler implements HttpHandler
 
                 //à modif en fonction du statuscode de retour de l'ACQ
                 if ("ACK".equals(ack)) {
-                    //sendResponse(exchange, 200, getSuccessPage());
+
                     exchange.getResponseHeaders().add("Location", "https://127.0.0.1:8043/api/success");
                     exchange.sendResponseHeaders(302, -1); // 302 : Redirection Found
                 } else if ("NACK".equals(ack)) {
                     exchange.getResponseHeaders().add("Location", "https://127.0.0.1:8043/api/fail");
                     exchange.sendResponseHeaders(302, -1); // 302 : Redirection Found
-                    //sendResponse(exchange, 200, getFailPage());
+
                 }
+
+
+
 
             } catch (IOException e) {
                 System.err.println("Erreur lors de la communication avec le serveur ACQ : " + e.getMessage());
@@ -102,6 +105,10 @@ public class AuthHttpHandler implements HttpHandler
         else if ("/api/fail".equals(path))
         {
             sendResponse(exchange, 200, getFailPage());
+        }
+        else if ("/api/loading".equals(path))
+        {
+            sendResponse(exchange, 200, getLoadingPage());
         }
         else
         {
