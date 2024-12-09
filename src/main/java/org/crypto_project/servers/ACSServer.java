@@ -9,7 +9,8 @@ import java.util.*;
 
 public class ACSServer {
 
-    private static final int PORT = 10043; // Port défini pour l'ACQ
+    private static final int APP_PORT = 10042;
+    private static final int ACQ_PORT = 10043;
     private final Map<String, String> tokenStore = new HashMap<>();
     private final Set<String> tokenList = new HashSet<>();
     private KeyPair keyPair; // Clés pour la signature
@@ -19,41 +20,51 @@ public class ACSServer {
     }
 
     public static void main(String[] args) throws Exception {
-        ParentServer server = new ParentServer(PORT);
+        ACSServer acs = new ACSServer();
 
-        try {
-            ACSServer acs = new ACSServer();
-            while (true) {
-                // En écoute de données
-                String message = server.read();
-                System.out.println("Received message: " + message);
-
-                String response;
-                if (message.startsWith("CLIENT")) {
-                    response = acs.handleClientMessage(message);
-                } else if (message.startsWith("SERVER")) {
-                    response = acs.handleServerMessage(message);
-                } else {
-                    response = "UNKNOWN COMMAND";
+        Runnable handleApp = () -> {
+            try {
+                ParentServer serverToApp = new ParentServer(APP_PORT);
+                try {
+                    while (true) {
+                        acs.handleServerMessage(serverToApp);
+                    }
+                } finally {
+                    serverToApp.close();
                 }
-
-                for (String token : acs.tokenList) {
-                    System.out.println(token);
-                }
-
-                server.send(response);
+            } catch (Exception e) {
+                throw new RuntimeException(e);
             }
-         } catch (Exception e) {
-             e.printStackTrace();
-         } finally {
-            server.close();
-         }
+        };
+
+        Runnable handleAcq = () -> {
+            try {
+                ParentServer serverToAcq = new ParentServer(ACQ_PORT);
+                try {
+                    while (true) {
+                        acs.handleClientMessage(serverToAcq);
+                    }
+                } finally {
+                    serverToAcq.close();
+                }
+            } catch (Exception e) {
+                throw new RuntimeException(e);
+            }
+        };
+
+        Thread thread1 = new Thread(handleApp);
+        Thread thread2 = new Thread(handleAcq);
+        // Start both threads
+        thread1.start();
+        thread2.start();
     }
 
-    private String handleClientMessage(String message) throws Exception {
+    private void handleClientMessage(ParentServer serverToApp) throws Exception {
+        String message = serverToApp.read();
         String[] values = message.split(";");
         if (values.length != 4) {
-            return "INVALID MESSAGE FORMAT";
+            serverToApp.send("INVALID MESSAGE FORMAT");
+            return;
         }
 
         String cardId = values[1];
@@ -70,13 +81,20 @@ public class ACSServer {
 //        tokenStore.put(cardId, token);
         String signedToken = SecurityUtils.sign(keyPair, token);
 
-        return "TOKEN;" + signedToken;
+        if (message.startsWith("CLIENT")) {
+            serverToApp.send("TOKEN;" + signedToken);
+        } else {
+            serverToApp.send("UNKNOWN COMMAND");
+        }
     }
 
-    private String handleServerMessage(String message) throws Exception {
+    private void handleServerMessage(ParentServer serverToAcq) throws Exception {
+        String message = serverToAcq.read();
+
         String[] values = message.split(";");
         if (values.length != 2) {
-            return "INVALID MESSAGE FORMAT";
+            serverToAcq.send("INVALID MESSAGE FORMAT");
+            return;
         }
 
         String token = values[1];
@@ -86,11 +104,10 @@ public class ACSServer {
 //        }
 
         // Vérification du token
-//        if (tokenStore.containsValue(token)) {
         if (tokenList.contains(token)) {
-            return "ACK";
+            serverToAcq.send("ACK");
         } else {
-            return "NACK";
+            serverToAcq.send("NACK");
         }
     }
 }
