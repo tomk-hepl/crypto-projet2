@@ -6,6 +6,8 @@ import org.crypto_project.databases.SQLLiteDatabase;
 import org.crypto_project.utils.ParentClient;
 
 import java.io.IOException;
+import java.net.URLDecoder;
+import java.nio.charset.StandardCharsets;
 
 import static org.crypto_project.utils.HttpHandlerUtils.*;
 
@@ -49,9 +51,12 @@ public class AuthHttpHandler implements HttpHandler
         String login = credentials[0];
         String password = credentials[1];
         String token = credentials[2];
+        String urlDecodedBase64 = URLDecoder.decode(token, StandardCharsets.UTF_8.name());
         if (token == null) {
             sendResponse(exchange, 400, "Invalid token.");
         }
+        System.out.println("token : " + token);
+        System.out.println("token bon format : " + urlDecodedBase64);
         boolean isValid = database.verifyUser(login, password);
 
         if (isValid) {
@@ -59,25 +64,20 @@ public class AuthHttpHandler implements HttpHandler
             //sendResponse(exchange, 200, "Authentication successful!");
             try {
 
-                exchange.getResponseHeaders().add("Location", "https://127.0.0.1:8043/api/loading");
-                exchange.sendResponseHeaders(302, -1); // 302 : Redirection Found
                 ParentClient client = new ParentClient(ACQ_PORT);
-                client.init(ACQ_PORT);
-                client.send(token);
+                client.send(urlDecodedBase64);
                 String ack = client.read();
 
                 //à modif en fonction du statuscode de retour de l'ACQ
-                if ("ACK".equals(ack)) {
+                if (ack.equals("ACK")) {
 
-                    exchange.getResponseHeaders().add("Location", "https://127.0.0.1:8043/api/success");
+                    exchange.getResponseHeaders().set("Location", "https://127.0.0.1:8043/api/success");
                     exchange.sendResponseHeaders(302, -1); // 302 : Redirection Found
-                } else if ("NACK".equals(ack)) {
-                    exchange.getResponseHeaders().add("Location", "https://127.0.0.1:8043/api/fail");
+                } else if (ack.equals("NACK")) {
+                    exchange.getResponseHeaders().set("Location", "https://127.0.0.1:8043/api/fail");
                     exchange.sendResponseHeaders(302, -1); // 302 : Redirection Found
 
                 }
-
-
 
 
             } catch (IOException e) {
@@ -108,6 +108,7 @@ public class AuthHttpHandler implements HttpHandler
         }
         else if ("/api/loading".equals(path))
         {
+
             sendResponse(exchange, 200, getLoadingPage());
         }
         else
