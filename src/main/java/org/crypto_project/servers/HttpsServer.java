@@ -3,9 +3,7 @@ package org.crypto_project.servers;
 import com.sun.net.httpserver.HttpsConfigurator;
 import org.crypto_project.databases.SQLLiteDatabase;
 import org.crypto_project.services.AuthHttpHandler;
-import org.crypto_project.services.PayementHttpHandler;
 import org.crypto_project.utils.SSLConfig;
-
 import javax.net.ssl.SSLContext;
 import java.io.IOException;
 import java.net.InetSocketAddress;
@@ -48,7 +46,7 @@ public class HttpsServer
 
     private void registerContexts() {
         server.createContext("/api/auth", new AuthHttpHandler(database));
-        server.createContext("/api/payment", new PayementHttpHandler());
+        server.createContext("/api/success", new AuthHttpHandler(database));
         System.out.println("Server contexts registered.");
     }
 
@@ -74,7 +72,6 @@ public class HttpsServer
         try {
             server.init();
             //client.init(ACQ_PORT);
-
         } catch (IOException e) {
             System.out.println("Error: " + e.getMessage());
         } catch (Exception e) {

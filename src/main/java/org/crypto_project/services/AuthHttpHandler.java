@@ -49,33 +49,38 @@ public class AuthHttpHandler implements HttpHandler
         String login = credentials[0];
         String password = credentials[1];
         String token = credentials[2];
-        /*if (token == null) {
+        if (token == null) {
             sendResponse(exchange, 400, "Invalid token.");
-        }*/
+        }
         boolean isValid = database.verifyUser(login, password);
 
         if (isValid) {
 
-            sendResponse(exchange, 200, "Authentication successful!");
-            sendResponse(exchange, 200, getPaymentPage());
-            /*try {
-                sendResponse(exchange,200 , getLoadingPage());
+            //sendResponse(exchange, 200, "Authentication successful!");
+            try {
+                /*exchange.getResponseHeaders().add("Location", "https://127.0.0.1:8043/api/success");
+                exchange.sendResponseHeaders(302, -1); // 302 : Redirection Found*/
+                //sendResponse(exchange,200 , getLoadingPage());
                 ParentClient client = new ParentClient(ACQ_PORT);
                 client.init(ACQ_PORT);
                 client.send(token);
                 String ack = client.read();
 
                 //à modif en fonction du statuscode de retour de l'ACQ
-                if ("fail".equals(ack)) {
-                    sendResponse(exchange, 200, getFailPage());
-                } else if ("success".equals(ack)) {
-                    sendResponse(exchange, 200, getSuccessPage());
+                if ("ACK".equals(ack)) {
+                    //sendResponse(exchange, 200, getSuccessPage());
+                    exchange.getResponseHeaders().add("Location", "https://127.0.0.1:8043/api/success");
+                    exchange.sendResponseHeaders(302, -1); // 302 : Redirection Found
+                } else if ("NACK".equals(ack)) {
+                    exchange.getResponseHeaders().add("Location", "https://127.0.0.1:8043/api/fail");
+                    exchange.sendResponseHeaders(302, -1); // 302 : Redirection Found
+                    //sendResponse(exchange, 200, getFailPage());
                 }
 
             } catch (IOException e) {
                 System.err.println("Erreur lors de la communication avec le serveur ACQ : " + e.getMessage());
                 sendResponse(exchange, 500, "Erreur interne lors de la communication avec ACQ.");
-            }*/
+            }
 
         } else {
             sendResponse(exchange, 401, "Invalid credentials.");
@@ -84,7 +89,24 @@ public class AuthHttpHandler implements HttpHandler
 
     private void handleGetRequest(HttpExchange exchange) throws IOException {
 
-        sendResponse(exchange, 200, getAuthPage());
+        String path = exchange.getRequestURI().getPath();
+
+        if ("/api/auth".equals(path))
+        {
+            sendResponse(exchange, 200, getAuthPage());
+        }
+        else if ("/api/success".equals(path))
+        {
+            sendResponse(exchange, 200, getSuccessPage());
+        }
+        else if ("/api/fail".equals(path))
+        {
+            sendResponse(exchange, 200, getFailPage());
+        }
+        else
+        {
+            sendResponse(exchange, 404, "Page not found.");
+        }
 
     }
 

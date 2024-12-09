@@ -136,7 +136,7 @@ public class HttpHandlerUtils
                 <h1>Connexion pour Achat</h1>
                 <form action="/api/auth" method="POST">
                     <input type="text" name="login" placeholder="Nom d'utilisateur" required>
-                    <input type="password" name="password" placeholder="Mot de passe" required> 
+                    <input type="password" name="password" placeholder="Mot de passe" required>
                      <input type="text" name="token" placeholder="code d'authentification" required>
                 <button type="submit">Se connecter</button>
                 </form>
