@@ -27,7 +27,7 @@ public class ACSServer {
                 ParentServer serverToApp = new ParentServer(APP_PORT);
                 try {
                     while (true) {
-                        acs.handleServerMessage(serverToApp);
+                        acs.handleClientMessage(serverToApp);
                     }
                 } finally {
                     serverToApp.close();
@@ -42,7 +42,7 @@ public class ACSServer {
                 ParentServer serverToAcq = new ParentServer(ACQ_PORT);
                 try {
                     while (true) {
-                        acs.handleClientMessage(serverToAcq);
+                        acs.handleServerMessage(serverToAcq);
                     }
                 } finally {
                     serverToAcq.close();

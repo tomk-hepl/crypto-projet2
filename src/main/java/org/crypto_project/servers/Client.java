@@ -9,7 +9,7 @@ import java.security.KeyPair;
 import java.util.Date;
 
 public class Client {
-    private static final int ACS_PORT = 10043;
+    private static final int ACS_PORT = 10042;
     private static final String DATE = "04/2026";
     private static final String CARD_ID = "5425233430109903";
     private final KeyPair keyPair;
