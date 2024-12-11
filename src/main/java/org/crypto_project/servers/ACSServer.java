@@ -15,7 +15,6 @@ public class ACSServer {
     private static final int ACQ_PORT = 10043;
     private final Map<String, String> tokenStore = new HashMap<>();
 
-    //private final Set<String> tokenList = new HashSet<>();
     private KeyPair keyPair; // Clés pour la signature
 
     public ACSServer() throws Exception {
@@ -100,10 +99,8 @@ public class ACSServer {
             return;
         }
 
-
         String token = values[1];
         System.out.println("token : " + token);
-
 
 //        if (!SecurityUtils.verifySignature(keyPair , signature, token)) {
 //            return "INVALID SIGNATURE";
