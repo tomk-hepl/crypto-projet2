@@ -2,7 +2,7 @@ package org.crypto_project.utils;
 
 import java.io.IOException;
 
-public class ParentClient {
+public class ParentClient  {
 
     protected TCPClient client;
     protected final String ipAddress = "127.0.0.1";

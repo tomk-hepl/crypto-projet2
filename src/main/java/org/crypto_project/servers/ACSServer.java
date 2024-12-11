@@ -4,6 +4,8 @@ import org.crypto_project.utils.ParentServer;
 import org.crypto_project.utils.SecurityUtils;
 
 import java.io.IOException;
+import java.net.URLDecoder;
+import java.nio.charset.StandardCharsets;
 import java.security.KeyPair;
 import java.util.*;
 
@@ -12,7 +14,7 @@ public class ACSServer {
     private static final int APP_PORT = 10042;
     private static final int ACQ_PORT = 10043;
     private final Map<String, String> tokenStore = new HashMap<>();
-    private final Set<String> tokenList = new HashSet<>();
+
     private KeyPair keyPair; // Clés pour la signature
 
     public ACSServer() throws Exception {
@@ -77,9 +79,9 @@ public class ACSServer {
 
         // Génération et signature du code d'authentification
         String token = UUID.randomUUID().toString();
-        tokenList.add(token);
-//        tokenStore.put(cardId, token);
+
         String signedToken = SecurityUtils.sign(keyPair, token);
+        tokenStore.put(signedToken, token);
 
         if (message.startsWith("CLIENT")) {
             serverToApp.send("TOKEN;" + signedToken);
@@ -98,13 +100,14 @@ public class ACSServer {
         }
 
         String token = values[1];
+        System.out.println("token : " + token);
 
 //        if (!SecurityUtils.verifySignature(keyPair , signature, token)) {
 //            return "INVALID SIGNATURE";
 //        }
 
         // Vérification du token
-        if (tokenList.contains(token)) {
+        if (tokenStore.containsKey(token)) {
             serverToAcq.send("ACK");
         } else {
             serverToAcq.send("NACK");

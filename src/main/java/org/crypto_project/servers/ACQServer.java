@@ -12,14 +12,17 @@ public class ACQServer {
 
     public static void main(String[] args) throws IOException {
         ParentServer server = new ParentServer(PORT);
+        System.out.println("Server ACQ started on port " + PORT);
         ParentClient client = new ParentClient(ACS_PORT);
 
         try {
             // En écoute de données
             String message = server.read();
-            client.init(ACS_PORT);
-            client.send(message);
+            System.out.println("Received message Server ACQ: " + message);
+            //client.init(ACS_PORT);
+            client.send("TOKEN;" + message);
             String ack = client.read();
+            System.out.println("Received ack from ACS: " + ack);
             server.send(ack);
 
          } catch (Exception e) {
