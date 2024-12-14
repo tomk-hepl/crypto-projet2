@@ -3,14 +3,19 @@ package org.crypto_project.services;
 import com.sun.net.httpserver.HttpExchange;
 import com.sun.net.httpserver.HttpHandler;
 import org.crypto_project.databases.SQLLiteDatabase;
+import org.crypto_project.utils.ParentClient;
 
 import java.io.IOException;
+import java.net.URLDecoder;
+import java.nio.charset.StandardCharsets;
 
 import static org.crypto_project.utils.HttpHandlerUtils.*;
 
 public class AuthHttpHandler implements HttpHandler
 {
     private final SQLLiteDatabase database;
+
+    private static final  int ACQ_PORT = 9043;
 
     public AuthHttpHandler(SQLLiteDatabase database) {
         this.database = database;
@@ -42,33 +47,75 @@ public class AuthHttpHandler implements HttpHandler
             return;
         }
 
+
         String login = credentials[0];
         String password = credentials[1];
         String token = credentials[2];
+        String urlDecodedBase64 = URLDecoder.decode(token, StandardCharsets.UTF_8.name());
+        if (token == null) {
+            sendResponse(exchange, 400, "Invalid token.");
+        }
+        System.out.println("token : " + token);
+        System.out.println("token bon format : " + urlDecodedBase64);
         boolean isValid = database.verifyUser(login, password);
 
         if (isValid) {
-            // sendResponse(exchange, 200, "Authentication successful!");
-            // à modifier, ici c'est pour tester l'affichage des pages
-            if (token.equals("fail")) {
-                sendResponse(exchange, 200, getFailPage());
-            } else if (token.equals("success")) {
-                sendResponse(exchange, 200, getSuccessPage());
-            } else {
-                sendResponse(exchange, 200, getLoadingPage());
+
+            //sendResponse(exchange, 200, "Authentication successful!");
+            try {
+
+                ParentClient client = new ParentClient(ACQ_PORT);
+                client.send(urlDecodedBase64);
+                String ack = client.read();
+
+                //à modif en fonction du statuscode de retour de l'ACQ
+                if (ack.equals("ACK")) {
+
+                    exchange.getResponseHeaders().set("Location", "https://127.0.0.1:8043/api/success");
+                    exchange.sendResponseHeaders(302, -1); // 302 : Redirection Found
+                } else if (ack.equals("NACK")) {
+                    exchange.getResponseHeaders().set("Location", "https://127.0.0.1:8043/api/fail");
+                    exchange.sendResponseHeaders(302, -1); // 302 : Redirection Found
+
+                }
+
+
+            } catch (IOException e) {
+                System.err.println("Erreur lors de la communication avec le serveur ACQ : " + e.getMessage());
+                sendResponse(exchange, 500, "Erreur interne lors de la communication avec ACQ.");
             }
+
         } else {
             sendResponse(exchange, 401, "Invalid credentials.");
         }
     }
 
     private void handleGetRequest(HttpExchange exchange) throws IOException {
-        String token = getQueryParam(exchange, "token");
-        if (token == null) {
-            sendResponse(exchange, 400, "Invalid token.");
-        } else {
-            // à modifier, ici c'est pour tester l'affichage des pages
-            sendResponse(exchange, 200, getAuthPage(token));
+
+        String path = exchange.getRequestURI().getPath();
+
+        if ("/api/auth".equals(path))
+        {
+            sendResponse(exchange, 200, getAuthPage());
         }
+        else if ("/api/success".equals(path))
+        {
+            sendResponse(exchange, 200, getSuccessPage());
+        }
+        else if ("/api/fail".equals(path))
+        {
+            sendResponse(exchange, 200, getFailPage());
+        }
+        else if ("/api/loading".equals(path))
+        {
+
+            sendResponse(exchange, 200, getLoadingPage());
+        }
+        else
+        {
+            sendResponse(exchange, 404, "Page not found.");
+        }
+
     }
+
 }
