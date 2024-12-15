@@ -39,7 +39,7 @@ public class HttpsServer
     }
 
     private void setupSSLContext() throws Exception {
-        SSLContext sslContext = SSLConfig.setupSSLContext("config.properties", "keystore.jks");
+        SSLContext sslContext = SSLConfig.setupSSLContextFromProperties("config.properties", "keystore.path", null);
         server.setHttpsConfigurator(new HttpsConfigurator(sslContext));
         System.out.println("SSL context configured.");
     }

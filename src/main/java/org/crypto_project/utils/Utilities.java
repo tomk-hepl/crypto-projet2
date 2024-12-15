@@ -1,9 +1,5 @@
 package org.crypto_project.utils;
 import java.io.IOException;
-import java.security.*;
-import java.security.spec.X509EncodedKeySpec;
-import java.util.Base64;
-import java.util.Scanner;
 
 public class Utilities {
 
@@ -11,14 +7,14 @@ public class Utilities {
 
     public static TCPClient clientInit(String ip, int port) throws IOException {
         TCPClient client = new TCPClient();
-        client.startConnection(ip,port);
+        client.startConnection(ip,port, null);
         System.out.println("Client connected to the port: " + port);
         return client;
     }
 
     public static TCPServer serverInit(int port) throws IOException {
         TCPServer server = new TCPServer();
-        server.start(port);
+        server.start(port, null);
         System.out.println("The server is waiting for new client to port " + port + "...");
         return server;
     }

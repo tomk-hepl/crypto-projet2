@@ -3,10 +3,7 @@ package org.crypto_project.servers;
 import org.crypto_project.utils.ParentClient;
 import org.crypto_project.utils.ParentServer;
 import org.crypto_project.utils.SecurityUtils;
-
-import java.io.IOException;
 import java.security.KeyPair;
-import java.util.Date;
 
 public class Client {
     private static final int ACS_PORT = 10042;
@@ -20,7 +17,7 @@ public class Client {
 
     public static void main(String[] args) throws Exception {
         Client app = new Client();
-        ParentClient client = new ParentClient(ACS_PORT);
+        ParentClient client = new ParentClient(ACS_PORT, null);
 
         try {
             // Create the message to send to the ACS

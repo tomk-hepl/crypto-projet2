@@ -2,7 +2,9 @@ package org.crypto_project.servers;
 
 import org.crypto_project.utils.ParentClient;
 import org.crypto_project.utils.ParentServer;
+import org.crypto_project.utils.SSLConfig;
 
+import javax.net.ssl.SSLContext;
 import java.io.IOException;
 
 public class ACQServer {
@@ -13,9 +15,16 @@ public class ACQServer {
     public static void main(String[] args) throws IOException {
         ParentServer server = new ParentServer(PORT);
         System.out.println("Server ACQ started on port " + PORT);
-        ParentClient client = new ParentClient(ACS_PORT);
+        ParentClient client = new ParentClient(ACS_PORT, null); // test ssl / no-ssl
 
         try {
+
+            SSLContext sslContext = SSLConfig.setupSSLContextFromProperties(
+                    "config.properties",
+                    "acq.keystore.path",
+                    "acq.truststore.path"
+            );
+
             // En écoute de données
             String message = server.read();
             System.out.println("Received message Server ACQ: " + message);

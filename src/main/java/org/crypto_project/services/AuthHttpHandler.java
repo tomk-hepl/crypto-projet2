@@ -64,7 +64,7 @@ public class AuthHttpHandler implements HttpHandler
             //sendResponse(exchange, 200, "Authentication successful!");
             try {
 
-                ParentClient client = new ParentClient(ACQ_PORT);
+                ParentClient client = new ParentClient(ACQ_PORT, null);
                 client.send(urlDecodedBase64);
                 String ack = client.read();
 
