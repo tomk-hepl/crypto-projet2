@@ -1,6 +1,8 @@
 package org.crypto_project.utils;
 
+import java.io.FileInputStream;
 import java.security.*;
+import java.security.cert.Certificate;
 import java.util.Base64;
 
 public class SecurityUtils {
@@ -24,17 +26,34 @@ public class SecurityUtils {
         return keyGen.generateKeyPair();
     }
 
-    public static String sign(KeyPair keyPair, String data) throws Exception {
+    public static String sign(PrivateKey privateKey, String data) throws Exception {
         Signature privateSignature = Signature.getInstance("SHA256withRSA");
-        privateSignature.initSign(keyPair.getPrivate());
+        privateSignature.initSign(privateKey);
         privateSignature.update(data.getBytes());
         return Base64.getEncoder().encodeToString(privateSignature.sign());
     }
 
-    public static boolean verifySignature(KeyPair keyPair, String signature, String data) throws Exception {
+    public static boolean verifySignature(PublicKey publicKey, String signature, String data) throws Exception {
         Signature publicSignature = Signature.getInstance("SHA256withRSA");
-        publicSignature.initVerify(keyPair.getPublic());
+        publicSignature.initVerify(publicKey);
         publicSignature.update(data.getBytes());
         return publicSignature.verify(Base64.getDecoder().decode(signature));
+    }
+
+    public static PublicKey loadPublicKeyFromCertificate(KeyStore store, String alias) throws Exception {
+        Certificate cert = store.getCertificate(alias);
+        return cert.getPublicKey();
+    }
+    public static PrivateKey loadPrivateKey(KeyStore store, String alias, String password) throws Exception {
+        KeyStore.PrivateKeyEntry pkEntry = (KeyStore.PrivateKeyEntry) store.getEntry(alias, new KeyStore.PasswordProtection(password.toCharArray()));
+        return pkEntry.getPrivateKey();
+    }
+
+    public static KeyStore loadStore(String storePath, String storePassword) throws Exception {
+        KeyStore keystore = KeyStore.getInstance("JKS");
+        try (FileInputStream fis = new FileInputStream(storePath)) {
+            keystore.load(fis, storePassword.toCharArray());
+        }
+        return keystore;
     }
 }

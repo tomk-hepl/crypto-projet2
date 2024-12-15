@@ -1,32 +1,41 @@
 package org.crypto_project.servers;
 
 import org.crypto_project.utils.ParentServer;
+import org.crypto_project.utils.SSLConfig;
 import org.crypto_project.utils.SecurityUtils;
-
-import java.io.IOException;
-import java.net.URLDecoder;
-import java.nio.charset.StandardCharsets;
-import java.security.KeyPair;
+import javax.net.ssl.SSLContext;
+import java.security.KeyStore;
+import java.security.PrivateKey;
+import java.security.PublicKey;
 import java.util.*;
 
 public class ACSServer {
 
     private static final int APP_PORT = 10042;
     private static final int ACQ_PORT = 10043;
-    private final Map<String, String> tokenStore = new HashMap<>();
+    private final Set<String> tokenStore = new HashSet<>();
 
-    private KeyPair keyPair; // Clés pour la signature
+    private final KeyStore keyStore;
+    private final KeyStore trustStore;
 
     public ACSServer() throws Exception {
-        keyPair = SecurityUtils.generateKeyPair(); // Génération des clés pour signature/validation
+        this.trustStore = SecurityUtils.loadStore("acs_truststore.jks", "acq-cert");
+        this.keyStore = SecurityUtils.loadStore("acs_keystore.jks", "acs-key");
     }
 
     public static void main(String[] args) throws Exception {
+        SSLContext sslContext = SSLConfig.setupSSLContextFromProperties(
+                "config.properties",
+                "acs.keystore.path",
+                "acs.truststore.path"
+        );
+
         ACSServer acs = new ACSServer();
 
         Runnable handleApp = () -> {
             try {
                 ParentServer serverToApp = new ParentServer(APP_PORT);
+                serverToApp.init(sslContext);
                 try {
                     while (true) {
                         acs.handleClientMessage(serverToApp);
@@ -42,6 +51,7 @@ public class ACSServer {
         Runnable handleAcq = () -> {
             try {
                 ParentServer serverToAcq = new ParentServer(ACQ_PORT);
+                serverToAcq.init(sslContext);
                 try {
                     while (true) {
                         acs.handleServerMessage(serverToAcq);
@@ -73,18 +83,23 @@ public class ACSServer {
         String date = values[2];
         String signature = values[3];
 
-//        if (!SecurityUtils.verifySignature(keyPair, signature, cardId + date)) {
-//            return "INVALID SIGNATURE";
-//        }
+        PublicKey publicKey = SecurityUtils.loadPublicKeyFromCertificate(this.trustStore, "client-cert");
+
+        if (!SecurityUtils.verifySignature(publicKey, signature, cardId + date)) {
+           serverToApp.send("INVALID SIGNATURE");
+           return;
+       }
 
         // Génération et signature du code d'authentification
         String token = UUID.randomUUID().toString();
 
-        String signedToken = SecurityUtils.sign(keyPair, token);
-        tokenStore.put(signedToken, token);
+        PrivateKey privateKey = SecurityUtils.loadPrivateKey(this.keyStore, "acs-keystore", "acs-key");
+
+        String signedToken = SecurityUtils.sign(privateKey, token);
+        tokenStore.add(token);
 
         if (message.startsWith("CLIENT")) {
-            serverToApp.send("TOKEN;" + signedToken);
+            serverToApp.send("TOKEN;" + token + ";" + signedToken);
         } else {
             serverToApp.send("UNKNOWN COMMAND");
         }
@@ -92,7 +107,7 @@ public class ACSServer {
 
     private void handleServerMessage(ParentServer serverToAcq) throws Exception {
         String message = serverToAcq.read();
-
+         Thread.sleep(2500);
         String[] values = message.split(";");
         if (values.length != 2) {
             serverToAcq.send("INVALID MESSAGE FORMAT");
@@ -107,7 +122,7 @@ public class ACSServer {
 //        }
 
         // Vérification du token
-        if (tokenStore.containsKey(token)) {
+        if (tokenStore.contains(token)) {
             serverToAcq.send("ACK");
         } else {
             serverToAcq.send("NACK");

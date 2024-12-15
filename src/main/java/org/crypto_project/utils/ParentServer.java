@@ -11,7 +11,6 @@ public class ParentServer {
 
     public ParentServer(int port) throws IOException {
         this.port = port;
-        this.init(null);
     }
 
     public void init(SSLContext sslContext) throws IOException {
