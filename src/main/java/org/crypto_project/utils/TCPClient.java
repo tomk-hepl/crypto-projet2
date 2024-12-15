@@ -1,5 +1,6 @@
 package org.crypto_project.utils;
 
+import javax.net.ssl.*;
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
@@ -11,8 +12,16 @@ public class TCPClient {
     private PrintWriter out;
     private BufferedReader in;
 
-    public void startConnection(String ip, int port) throws IOException {
-        clientSocket = new Socket(ip, port);
+    public void startConnection(String ip, int port, SSLContext sslContext) throws IOException {
+        if (sslContext != null) {
+            SSLSocketFactory factory = sslContext.getSocketFactory();
+            clientSocket = (SSLSocket) factory.createSocket(ip, port);
+            System.out.println("SSL client connection etablie.");
+        } else {
+            clientSocket = new Socket(ip, port);
+            System.out.println("TCP client connection etablie.");
+        }
+
         out = new PrintWriter(clientSocket.getOutputStream(), true);
         in = new BufferedReader(new InputStreamReader(clientSocket.getInputStream()));
     }
@@ -30,11 +39,13 @@ public class TCPClient {
         out.close();
         clientSocket.close();
     }
-	
+
+    /*
 	public static void sendAndClose(String message) throws IOException {
 		TCPClient client = new TCPClient();
 		client.startConnection("127.0.0.1", 6666);
 		client.sendMessage(message);
 		client.stopConnection();
 	}
+	*/
 }

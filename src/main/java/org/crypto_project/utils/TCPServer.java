@@ -1,5 +1,6 @@
 package org.crypto_project.utils;
 
+import javax.net.ssl.*;
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
@@ -13,9 +14,21 @@ public class TCPServer {
     private PrintWriter out;
     private BufferedReader in;
 
-    public void start(int port) throws IOException {
-        serverSocket = new ServerSocket(port);
 
+    public TCPServer() {}
+    public TCPServer(ServerSocket serverSocket) {
+        if(serverSocket != null) this.serverSocket = serverSocket;
+    }
+
+    public void start(int port, SSLContext sslContext) throws IOException {
+        if (sslContext != null) {
+            SSLServerSocketFactory factory = sslContext.getServerSocketFactory();
+            serverSocket = factory.createServerSocket(port);
+            System.out.println("Secure SSL server started on port " + port);
+        } else {
+            serverSocket = new ServerSocket(port);
+            System.out.println("TCP server started on port " + port);
+        }
     }
 
     public void listenToNewClient() throws IOException {

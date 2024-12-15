@@ -1,5 +1,6 @@
 package org.crypto_project.utils;
 
+import javax.net.ssl.*;
 import java.io.IOException;
 
 public class ParentServer {
@@ -10,14 +11,19 @@ public class ParentServer {
 
     public ParentServer(int port) throws IOException {
         this.port = port;
-        this.init();
     }
 
-    public void init() throws IOException {
-        // init server
-         server = new TCPServer();
-        server.start(this.port);
-        System.out.println("Server started on port " + this.port);
+    public void init(SSLContext sslContext) throws IOException {
+        if (sslContext != null) {
+            SSLServerSocketFactory factory = sslContext.getServerSocketFactory();
+            SSLServerSocket sslServerSocket = (SSLServerSocket) factory.createServerSocket(this.port);
+            this.server = new TCPServer(sslServerSocket);
+            System.out.println("Secure ParentServer started on port " + this.port);
+        } else {
+            this.server = new TCPServer();
+            this.server.start(this.port, null);
+            System.out.println("ParentServer started on port " + this.port);
+        }
     }
 
     public String read() throws IOException {
