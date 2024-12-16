@@ -8,28 +8,6 @@ import java.util.Properties;
 
 public class SSLConfig {
 
-    /*
-    public static SSLContext setupSSLContext(String propertiesFile, String keystoreFile) throws Exception {
-        Properties properties = loadProperties(propertiesFile);
-        try (FileInputStream fis = new FileInputStream(propertiesFile)) {
-            properties.load(fis);
-        }
-        char[] password = properties.getProperty("keystore.password").toCharArray();
-
-        KeyStore ks = loadKeyStore(keystoreFile, password);
-
-        KeyManagerFactory kmf = KeyManagerFactory.getInstance("SunX509");
-        kmf.init(ks, password);
-
-        TrustManagerFactory tmf = TrustManagerFactory.getInstance("SunX509");
-        tmf.init(ks);
-
-        SSLContext sslContext = SSLContext.getInstance("TLS");
-        sslContext.init(kmf.getKeyManagers(), tmf.getTrustManagers(), null);
-        return sslContext;
-    }
-    */
-
     public static SSLContext setupSSLContext(
             String keystorePath, String keystorePassword,
             String truststorePath, String truststorePassword) throws Exception {

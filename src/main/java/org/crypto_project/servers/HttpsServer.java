@@ -49,6 +49,7 @@ public class HttpsServer
         server.createContext("/api/loading", new AuthHttpHandler(database));
         server.createContext("/api/success", new AuthHttpHandler(database));
         server.createContext("/api/fail", new AuthHttpHandler(database));
+        server.createContext("/api/used", new AuthHttpHandler(database));
         System.out.println("Server contexts registered.");
     }
 

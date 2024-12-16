@@ -19,7 +19,7 @@ public class ACQServer {
         );
 
         ParentServer server = new ParentServer(PORT);
-        server.init(null);
+        server.init(sslContext);
         System.out.println("Server ACQ started on port " + PORT);
 
         try {

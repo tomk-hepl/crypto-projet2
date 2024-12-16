@@ -20,17 +20,6 @@ public class HttpHandlerUtils
         os.close();
     }
 
-    public static String getQueryParam(HttpExchange exchange, String paramName) {
-        // Extract the query string from the request URI
-        String query = exchange.getRequestURI().getQuery();
-
-        // Parse the query string into a map of key-value pairs
-        Map<String, String> queryParams = parseQuery(query);
-
-        // Return the value for the specified parameter name
-        return queryParams.getOrDefault(paramName, null);
-    }
-
     private static Map<String, String> parseQuery(String query) {
         Map<String, String> queryParams = new HashMap<>();
         if (query != null) {
@@ -58,7 +47,7 @@ public class HttpHandlerUtils
             requestBody.append(line);
         }
         reader.close();
-        System.out.println("Requête reçue : --" + requestBody.toString() + "--");
+        System.out.println("Requête reçue : --" + requestBody + "--");
         return requestBody.toString();
     }
 
@@ -77,75 +66,110 @@ public class HttpHandlerUtils
 
     public static String getAuthPage() {
         return """
-                <!DOCTYPE html>
-                <html lang="fr">
-                <head>
-                    <meta charset="UTF-8">
-                    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-                    <title>Connexion pour Achat</title>
-                    <style>
-                        body {
-                            font-family: Arial, sans-serif;
-                            background-color: #f4f4f9;
-                            margin: 0;
-                            padding: 0;
-                            display: flex;
-                            justify-content: center;
-                            align-items: center;
-                            height: 100vh;
-                        }
-                        .login-container {
-                            background: white;
-                            padding: 20px;
-                            border-radius: 8px;
-                            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
-                            width: 300px;
-                            text-align: center;
-                        }
-                        h1 {
-                            font-size: 1.5rem;
-                            margin-bottom: 20px;
-                        }
-                        input[type="text"], input[type="password"] {
-                            width: calc(100% - 22px);
-                            padding: 10px;
-                            margin: 10px 0;
-                            border: 1px solid #ccc;
-                            border-radius: 4px;
-                        }
-                        button {
-                            background-color: #28a745;
-                            color: white;
-                            padding: 10px;
-                            border: none;
-                            border-radius: 4px;
-                            cursor: pointer;
-                            width: 100%;
-                        }
-                        button:hover {
-                            background-color: #218838;
-                        }
-                        .note {
-                            margin-top: 20px;
-                            font-size: 0.9rem;
-                            color: #555;
-                        }
-                        </style>
-                </head>
-                <body>
-                    <div class="login-container">
-                        <h1>Connexion pour Achat</h1>
-                        <form action="/api/loading" method="POST">
-                            <input type="text" name="login" value="Josue" placeholder="Nom d'utilisateur" required>
-                            <input type="password" name="password" value="password1" placeholder="Mot de passe" required>
-                             <input type="text" name="token" placeholder="code d'authentification" required>   
+            <!DOCTYPE html>
+            <html lang="fr">
+            <head>
+                <meta charset="UTF-8">
+                <meta name="viewport" content="width=device-width, initial-scale=1.0">
+                <title>Connexion pour Achat</title>
+                <style>
+                    body {
+                        font-family: Arial, sans-serif;
+                        background-color: #f4f4f9;
+                        margin: 0;
+                        padding: 0;
+                        display: flex;
+                        justify-content: center;
+                        align-items: center;
+                        height: 100vh;
+                    }
+                    .login-container {
+                        background: white;
+                        padding: 20px;
+                        border-radius: 8px;
+                        box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+                        width: 300px;
+                        text-align: center;
+                    }
+                    h1 {
+                        font-size: 1.5rem;
+                        margin-bottom: 20px;
+                    }
+                    input[type="text"], input[type="password"] {
+                        width: calc(100% - 22px);
+                        padding: 10px;
+                        margin: 10px 0;
+                        border: 1px solid #ccc;
+                        border-radius: 4px;
+                    }
+                    button {
+                        background-color: #28a745;
+                        color: white;
+                        padding: 10px;
+                        border: none;
+                        border-radius: 4px;
+                        cursor: pointer;
+                        width: 100%;
+                    }
+                    button:hover {
+                        background-color: #218838;
+                    }
+                    .note {
+                        margin-top: 20px;
+                        font-size: 0.9rem;
+                        color: #555;
+                    }
+                    .loading-container {
+                        display: none;
+                        justify-content: center;
+                        align-items: center;
+                        text-align: center;
+                    }
+                    .loading-container h1 {
+                        font-size: 1.5rem;
+                        color: #888;
+                    }
+                </style>
+            </head>
+            <body>
+                <div class="login-container" id="login-container">
+                    <h1>Connexion pour Achat</h1>
+                    <form id="auth-form" action="/api/loading" method="POST">
+                        <input type="text" name="login" value="Josue" placeholder="Nom d'utilisateur" required>
+                        <input type="password" name="password" value="password1" placeholder="Mot de passe" required>
+                        <input type="text" name="token" placeholder="code d'authentification" required>
                         <button id="submit-btn" type="submit">Se connecter</button>
-                        </form>
-                        <p class="note">Vos informations resteront confidentielles.</p>
-                    </div>
-                </body>
-                </html>
-                """;
+                    </form>
+                    <p class="note">Vos informations resteront confidentielles.</p>
+                </div>
+                <div class="loading-container" id="loading-container">"""
+                + getLoadingPage() +
+                """
+                </div>
+
+                <script>
+                    const form = document.getElementById("auth-form");
+                    const loginContainer = document.getElementById("login-container");
+                    const loadingContainer = document.getElementById("loading-container");
+
+                    form.onsubmit = function (event) {
+                        // Prevent form from submitting immediately
+                        event.preventDefault();
+
+                        // Show loading page
+                        loginContainer.style.display = "none";
+                        loadingContainer.style.display = "flex";
+
+                        // Simulate the form submission (you can use AJAX if needed)
+                        setTimeout(() => {
+                            // Optionally, you could trigger the form submission manually here
+                            form.submit();
+                        }, 1000); // Add a delay to show the loading page for a moment before submission
+                    };
+                </script>
+            </body>
+            </html>
+            """;
     }
 
     public static String getLoadingPage() {
@@ -250,13 +274,22 @@ public class HttpHandlerUtils
     }
 
     public static String getFailPage() {
+        String icon = "❌";
+        String label = "Transaction Échouée";
+        String message = "Nous sommes désolés, mais votre transaction n'a pas pu être complétée.";
+        return getFailPage(icon, label, message);
+    }
+
+    public static String getFailPage(String icon, String label, String message) {
         return """
         <!DOCTYPE html>
         <html lang="fr">
         <head>
             <meta charset="UTF-8">
             <meta name="viewport" content="width=device-width, initial-scale=1.0">
-            <title>Transaction Échouée</title>
+            <title>"""
+            + label +"""
+            </title>
             <style>
                 body {
                     font-family: Arial, sans-serif;
@@ -289,14 +322,18 @@ public class HttpHandlerUtils
         </head>
         <body>
             <div class="container">
-                <div class="icon">❌</div>
-                <h1>Transaction Échouée</h1>
-                <p>Nous sommes désolés, mais votre transaction n'a pas pu être complétée.</p>
+                <div class="icon">""" + icon + """
+                </div>
+                <h1>"""
+                + label +
+                """
+                </h1>
+                <p>"""
+                + message +"""
+            </p>
             </div>
         </body>
         </html>
         """;
     }
-
-
 }

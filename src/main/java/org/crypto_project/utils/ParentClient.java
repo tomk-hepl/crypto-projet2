@@ -10,22 +10,9 @@ public class ParentClient  {
     protected final int port;
     protected final String ipAddress = "127.0.0.1";
 
-    /*
-    public ParentClient(int port) throws IOException {
-        this.init(port, null);
-    }
-    */
-
     public ParentClient(int port) throws IOException {
         this.port = port;
     }
-
-    /*
-    private void init(int port) throws IOException {
-        client = new TCPClient();
-        client.startConnection(ipAddress, port);
-        System.out.println("Client started on port " + port);
-    } */
 
     public void init(SSLContext sslContext) throws IOException {
 

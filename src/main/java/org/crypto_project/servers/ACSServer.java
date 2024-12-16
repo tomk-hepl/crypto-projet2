@@ -13,7 +13,7 @@ public class ACSServer {
 
     private static final int APP_PORT = 10042;
     private static final int ACQ_PORT = 10043;
-    private final Set<String> tokenStore = new HashSet<>();
+    private final Map<String, Boolean> tokenStore = new HashMap<>();
 
     private final KeyStore keyStore;
     private final KeyStore trustStore;
@@ -96,7 +96,7 @@ public class ACSServer {
         PrivateKey privateKey = SecurityUtils.loadPrivateKey(this.keyStore, "acs-keystore", "acs-key");
 
         String signedToken = SecurityUtils.sign(privateKey, token);
-        tokenStore.add(token);
+        tokenStore.put(token,true);
 
         if (message.startsWith("CLIENT")) {
             serverToApp.send("TOKEN;" + token + ";" + signedToken);
@@ -107,7 +107,7 @@ public class ACSServer {
 
     private void handleServerMessage(ParentServer serverToAcq) throws Exception {
         String message = serverToAcq.read();
-         Thread.sleep(2500);
+         Thread.sleep(500);
         String[] values = message.split(";");
         if (values.length != 2) {
             serverToAcq.send("INVALID MESSAGE FORMAT");
@@ -117,13 +117,14 @@ public class ACSServer {
         String token = values[1];
         System.out.println("token : " + token);
 
-//        if (!SecurityUtils.verifySignature(keyPair , signature, token)) {
-//            return "INVALID SIGNATURE";
-//        }
-
         // Vérification du token
-        if (tokenStore.contains(token)) {
-            serverToAcq.send("ACK");
+        if (tokenStore.containsKey(token)) {
+            if (tokenStore.get(token)) {
+                tokenStore.put(token,false);
+                serverToAcq.send("ACK");
+            } else {
+                serverToAcq.send("USED");
+            }
         } else {
             serverToAcq.send("NACK");
         }
